@@ -1,0 +1,84 @@
+#!/bin/bash
+source /usr/local/JSBach/conf/ifwan.conf
+
+###################
+#### FUNCIONES ####
+###################
+
+function iniciar(){
+
+    if [ "$(estado)" == "activado" ]; 
+    then
+        echo "El enrutamiento ya está activo"
+        return
+    fi
+
+    # Activar ip_forward
+    echo 1 > /proc/sys/net/ipv4/ip_forward
+
+    # Añadir regla MASQUERADE si no existe
+    if ! iptables -t nat -C POSTROUTING -o "$IFWAN" -j MASQUERADE 2>/dev/null; 
+    then
+        iptables -t nat -A POSTROUTING -o "$IFWAN" -j MASQUERADE
+    fi
+
+    echo "Enrutamiento inicializado"
+    
+
+}
+
+function parar(){
+
+    # Desactivar ip_forward
+    echo 0 > /proc/sys/net/ipv4/ip_forward
+
+    # Eliminar regla MASQUERADE si existe
+    if iptables -t nat -C POSTROUTING -o "$IFWAN" -j MASQUERADE 2>/dev/null; then
+        iptables -t nat -D POSTROUTING -o "$IFWAN" -j MASQUERADE
+    fi
+
+    echo "Enrutamiento parado"
+
+}
+
+function estado(){
+
+    if [ "$(</proc/sys/net/ipv4/ip_forward)" == "1" ] && \
+       iptables -t nat -C POSTROUTING -o "$IFWAN" -j MASQUERADE 2>/dev/null; then
+        echo "activado"
+    else
+        echo "desactivado"
+    fi
+}
+
+
+##############
+#### MAIN ####
+##############
+
+
+MENSAJE="Debes usar algun argumento: Iniciar, parar, estado"
+
+# Comprobamos que haya al menos un argumento
+if [ $# -lt 1 ]; then
+  echo "$MENSAJE"
+  exit 1
+fi
+
+OPCION_1=$1
+shift
+
+case "$OPCION_1" in
+    iniciar)
+    iniciar  $@
+    ;;
+    parar)
+    parar	$@
+    ;; 
+    estado)
+    estado $@
+    ;;
+  *)
+    echo "$MENSAJE"
+    ;;
+esac

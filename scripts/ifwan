@@ -1,0 +1,143 @@
+#!/bin/bash
+source /usr/local/JSBach/conf/ifwan.conf
+
+###################
+#### FUNCIONES ####
+###################
+
+function comprobar_dns(){
+
+    if grep -q "^#DNS=" /etc/systemd/resolved.conf; 
+        then
+            sed -i "s|^#DNS=.*|DNS=$S_DNS|" /etc/systemd/resolved.conf
+        elif grep -q "^DNS=" /etc/systemd/resolved.conf; 
+        then
+            sed -i "s|^DNS=.*|DNS=$S_DNS|" /etc/systemd/resolved.conf
+        else
+            echo "DNS=$S_DNS" >> /etc/systemd/resolved.conf
+    fi
+
+}
+
+
+function iniciar(){
+
+    iniciado="Tarjeta $IFWAN iniciada correctamente"
+
+    if  [ "$(estado)" == "Conexión inactiva" ]
+        then
+            case $MODO in
+                "dhcp")
+                    dhcpcd $IFWAN
+                    echo $iniciado
+                ;;
+                "manual")
+                    ip a a $IP/$MASC dev $IFWAN
+                    ip l s dev $IFWAN up
+                    ip r a default via $PE
+                    comprobar_dns
+                    systemctl restart systemd-resolved
+                    echo $iniciado
+                ;;
+                *)
+                    echo "Error: DHCP o MANUAL"
+                ;;
+            esac
+        else
+            echo "La tarjeta ya está activa"
+            exit 1    
+    fi
+
+}
+
+
+function parar(){
+
+    parado="Tarjeta $IFWAN parada correctamente"
+
+    if  [ "$(estado)" == "Conexión activa" ]
+        then
+            case $MODO in
+                "dhcp")
+                    dhcpcd -k $IFWAN
+                    echo $parado
+                ;;
+                "manual")
+                    ip a d $IP/$MASC dev $IFWAN
+                    ip l s dev $IFWAN down
+                    echo $parado
+                ;;
+                *)
+                    echo "Error al parar"
+                ;;
+            esac
+        else
+            echo "La tarjeta ya está inactiva"
+            exit 1    
+    fi
+
+}
+
+function configurar(){
+
+    fichero="/usr/local/JSBach/conf/ifwan.conf"  # El nombre del fichero para hacer las modificaciones
+
+    (
+        echo MODO=$1
+        echo IFWAN=$2
+        echo IP=$(echo "$3" | cut -d'/' -f1)
+        echo MASC=$(echo "$3" | cut -d'/' -f2)
+        echo PE=$4
+        echo S_DNS=$5 
+        
+    ) > $fichero
+
+    echo "Configuración guardada correctamente"
+
+}
+
+function estado(){
+
+    if nslookup google.com >/dev/null 2>&1; 
+        then
+            echo "Conexión activa"
+        else
+            echo "Conexión inactiva"
+    fi
+
+}
+
+
+##############
+#### MAIN ####
+##############
+
+
+MENSAJE="Debes usar algun argumento: Iniciar, parar, configurar, estado"
+
+# Comprobamos que haya al menos un argumento
+if [ $# -lt 1 ]; then
+  echo "$MENSAJE"
+  exit 1
+fi
+
+OPCION_1=$1
+shift
+
+case "$OPCION_1" in
+    iniciar)
+    iniciar  $@
+    ;;
+    parar)
+    parar	$@
+    ;; 
+    configurar) 
+    configurar $@
+    ;;
+    estado)
+    estado $@
+    ;;
+  *)
+    echo "$MENSAJE"
+    ;;
+esac

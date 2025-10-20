@@ -1,0 +1,66 @@
+#!/bin/bash
+source /usr/local/JSBach/conf/ifwan.conf
+
+###################
+#### FUNCIONES ####
+###################
+
+function iniciar(){
+
+   echo "Iniciar"
+
+}
+
+
+function parar(){
+
+    echo "Parar"
+
+}
+
+function configurar(){
+
+    echo "Configurar"
+
+}
+
+function estado(){
+
+    echo "Estado"
+
+}
+
+
+##############
+#### MAIN ####
+##############
+
+
+MENSAJE="Debes usar algun argumento: Iniciar, parar, configurar, estado"
+
+# Comprobamos que haya al menos un argumento
+if [ $# -lt 1 ]; then
+  echo "$MENSAJE"
+  exit 1
+fi
+
+OPCION_1=$1
+shift
+
+case "$OPCION_1" in
+    iniciar)
+    iniciar  $@
+    ;;
+    parar)
+    parar	$@
+    ;; 
+    configurar) 
+    configurar $@
+    ;;
+    estado)
+    estado $@
+    ;;
+  *)
+    echo "$MENSAJE"
+    ;;
+esac
