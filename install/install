@@ -1,12 +1,25 @@
 #!/bin/bash
 
-###
-### Desactivar NetworkManager
-###
+# Actualizamos apt
 
-echo "desactivando NetworkManager"
+apt update
 
+# Instalar Socat
+echo "Instalando Socat..."
+apt install socat
+
+# Instalar net-start
+echo "Instalando NetStat..."
+apt install net-tools
+
+# Instalar Servidor Apache y habilitar CGI
+echo "Instalando Apache..."
+apt install -y apache2
+a2enmod cgi
+systemctl apache2 restart
+
+# Desactivar NetworkManager
+echo "Desactivando NetworkManager..."
 systemctl stop NetworkManager
 systemctl disable NetworkManager
-echo
 

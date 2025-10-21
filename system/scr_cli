@@ -1,0 +1,41 @@
+#!/bin/bash
+
+SCRIPTS_DIR="/usr/local/JSBach/scripts"
+
+while true; do
+  # Mostrar prompt y leer entrada del usuario
+  #echo -n "JSBach>"
+  read input_line
+
+  # Comprobar si el usuario quiere salir
+  if [ "$input_line" = "salir" ]; then
+    echo "Saliendo..."
+    exit 0
+  fi
+
+  # Separar la linea de array de argumentos
+  # Utilizamos 'read -a' para separar por espacios
+  read -a args <<< "$input_line"
+
+  # Comprobar que se ha introducido al menos un argumento
+  if [ ${#args[@]} -lt 1 ]; then
+    continue
+  fi
+
+  SCRIPT_NAME="${args[0]}"
+  SCRIPT_PATH="$SCRIPTS_DIR/$SCRIPT_NAME"
+
+  # Argumentos restantes para pasar al script
+  SCRIPT_ARGS=("${args[@]:1}")
+
+  # Comprobar que el script existe y es ejecutable
+  if [ ! -x "$SCRIPT_PATH" ]; then
+    echo "Error: El script '$SCRIPT_NAME' no existe y no es ejecutable en $SCRIPTS_DIR."
+    continue
+  fi
+
+  # Ejecutar el script con los argumentos
+  "$SCRIPT_PATH" "${SCRIPT_ARGS[@]}"
+
+  echo "final"
+done

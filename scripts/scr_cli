@@ -1,7 +1,0 @@
-#!/bin/bash
-
-SCRIPTS_DIR="/ruta/a/la/racrpeta"
-
-while true;
-    do
-        read -p "cli> "
