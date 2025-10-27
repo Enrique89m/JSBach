@@ -1,8 +1,13 @@
 #!/bin/bash
 
 # Actualizamos apt
-
 apt update
+
+# Instalar iw para detectar WAN wifi
+apt install iw
+
+# Instalamos Expect (automatización de comandos, para finalizar scr_cli)
+apt install expect -y
 
 # Instalar Socat
 echo "Instalando Socat..."

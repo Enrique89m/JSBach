@@ -1,41 +1,25 @@
 #!/bin/bash
 
-SCRIPTS_DIR="/usr/local/JSBach/scripts"
+while read orden
+do
+    if [[ -n $orden ]] then
+        Comando=$(echo $orden| awk '{print $1}')
+        Argumentos=$(echo $orden| awk '{for (i=2; i<=NF; ++i)  printf $i " " }') 
 
-while true; do
-  # Mostrar prompt y leer entrada del usuario
-  #echo -n "JSBach>"
-  read input_line
 
-  # Comprobar si el usuario quiere salir
-  if [ "$input_line" = "salir" ]; then
-    echo "Saliendo..."
-    exit 0
-  fi
+        case "$Comando" in
+            "enrutar")
+                /usr/local/JSBach/scripts/enrutar $Argumentos
+                ;;
+            "ifwan")
+                /usr/local/JSBach/scripts/ifwan $Argumentos
+                ;;
+            *)
+                echo "CLI Error en el argumento"
+                ;;
+        esac
+    fi
 
-  # Separar la linea de array de argumentos
-  # Utilizamos 'read -a' para separar por espacios
-  read -a args <<< "$input_line"
+    echo "final"
+done;
 
-  # Comprobar que se ha introducido al menos un argumento
-  if [ ${#args[@]} -lt 1 ]; then
-    continue
-  fi
-
-  SCRIPT_NAME="${args[0]}"
-  SCRIPT_PATH="$SCRIPTS_DIR/$SCRIPT_NAME"
-
-  # Argumentos restantes para pasar al script
-  SCRIPT_ARGS=("${args[@]:1}")
-
-  # Comprobar que el script existe y es ejecutable
-  if [ ! -x "$SCRIPT_PATH" ]; then
-    echo "Error: El script '$SCRIPT_NAME' no existe y no es ejecutable en $SCRIPTS_DIR."
-    continue
-  fi
-
-  # Ejecutar el script con los argumentos
-  "$SCRIPT_PATH" "${SCRIPT_ARGS[@]}"
-
-  echo "final"
-done

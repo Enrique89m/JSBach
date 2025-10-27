@@ -16,15 +16,7 @@ echo ""
   <h1>IFWAN Estado</h1>
 EOM
 
-while IFS= read -r linea
-do
-    if [[ $linea == 'final' ]]; then
-      break
-    fi
-
-    echo "$linea"
-
-done < <((echo "enrutar parar") | nc 127.0.0.1 1234)    
+echo "$(/usr/local/JSBach/scripts/client_srv_cli ifwan estado) <br>"
 
 /bin/cat <<EOM
 </body>

@@ -24,76 +24,149 @@ function iniciar(){
 
     iniciado="Tarjeta $IFWAN iniciada correctamente"
 
-    if  [ "$(estado)" == "Conexión inactiva" ]
-        then
-            case $MODO in
-                "dhcp")
-                    dhcpcd $IFWAN
-                    echo $iniciado
-                ;;
-                "manual")
-                    ip a a $IP/$MASC dev $IFWAN
-                    ip l s dev $IFWAN up
-                    ip r a default via $PE
-                    comprobar_dns
-                    systemctl restart systemd-resolved
-                    echo $iniciado
-                ;;
-                *)
-                    echo "Error: DHCP o MANUAL"
-                ;;
-            esac
-        else
-            echo "La tarjeta ya está activa"
-            exit 1    
+    # --- DETECCIÓN AUTOMÁTICA WiFi o Cable ---
+    if iw dev "$IFWAN" info >/dev/null 2>&1; then
+        echo "La interfaz $IFWAN es Wi-Fi"
+        # Configurar conexión Wi-Fi antes de levantar IP
+        if [ -z "$SSID" ] || [ -z "$PASSWORD" ]; then
+            echo "SSID o contraseña no definidos en la configuración"
+            exit 1
+        fi
+
+        # Levantar interfaz Wi-Fi
+        ip link set "$IFWAN" up
+
+        # Generar archivo temporal de configuración
+        wpa_passphrase "$SSID" "$PASSWORD" > /tmp/wifi.conf
+
+        # Conectar con wpa_supplicant en background
+        wpa_supplicant -B -i "$IFWAN" -c /tmp/wifi.conf
+        sleep 3  # pequeña espera para estabilidad
+    else
+        echo "La interfaz $IFWAN es por cable"
+    fi
+
+
+    # --- CONFIGURACIÓN SEGÚN MODO ---
+    if [ "$(estado)" == "Conexión inactiva" ]; then
+        case $MODO in
+            "dhcp")
+                dhcpcd $IFWAN
+                echo "$iniciado"
+            ;;
+            "manual")
+                ip a a $IP/$MASC dev $IFWAN
+                ip l s dev $IFWAN up
+                ip r a default via $PE
+                comprobar_dns
+                systemctl restart systemd-resolved
+                echo "$iniciado"
+            ;;
+            *)
+                echo "Error: especifica DHCP o MANUAL"
+            ;;
+        esac
+    else
+        echo "La tarjeta ya está activa"
+        exit 1
     fi
 
 }
 
 
-function parar(){
-
+function parar() {
     parado="Tarjeta $IFWAN parada correctamente"
 
-    if  [ "$(estado)" == "Conexión activa" ]
-        then
-            case $MODO in
-                "dhcp")
-                    dhcpcd -k $IFWAN
-                    echo $parado
-                ;;
-                "manual")
-                    ip a d $IP/$MASC dev $IFWAN
-                    ip l s dev $IFWAN down
-                    echo $parado
-                ;;
-                *)
-                    echo "Error al parar"
-                ;;
-            esac
-        else
-            echo "La tarjeta ya está inactiva"
-            exit 1    
-    fi
+    if [ "$(estado)" == "Conexión activa" ]; then
+        # Si es WiFi, parar wpa_supplicant también
+        if iw dev "$IFWAN" info >/dev/null 2>&1; then
+            killall wpa_supplicant 2>/dev/null
+        fi
 
+        case $MODO in
+            "dhcp")
+                dhcpcd -k $IFWAN
+                ip l s dev $IFWAN down
+                echo "$parado"
+            ;;
+            "manual")
+                ip a d $IP/$MASC dev $IFWAN
+                ip l s dev $IFWAN down
+                echo "$parado"
+            ;;
+            *)
+                echo "Error al parar"
+            ;;
+        esac
+    else
+        echo "La tarjeta ya está inactiva"
+        exit 1
+    fi
 }
 
-function configurar(){
 
-    fichero="/usr/local/JSBach/conf/ifwan.conf"  # El nombre del fichero para hacer las modificaciones
+function configurar() {
+    fichero="/usr/local/JSBach/conf/ifwan.conf"
 
-    (
-        echo MODO=$1
-        echo IFWAN=$2
-        echo IP=$(echo "$3" | cut -d'/' -f1)
-        echo MASC=$(echo "$3" | cut -d'/' -f2)
-        echo PE=$4
-        echo S_DNS=$5 
-        
-    ) > $fichero
+    MODO=$1
+    IFWAN=$2
+
+    # Detectar si la interfaz es Wi-Fi
+    es_wifi=false
+    if iw dev "$IFWAN" info >/dev/null 2>&1; then
+        es_wifi=true
+    fi
+
+    # --- CONFIGURACIÓN SEGÚN EL MODO ---
+    if [ "$MODO" == "manual" ]; then
+        IP_CIDR=$3
+        PE=$4
+        S_DNS=$5
+        IP=$(echo "$IP_CIDR" | cut -d'/' -f1)
+        MASC=$(echo "$IP_CIDR" | cut -d'/' -f2)
+        shift 5
+    elif [ "$MODO" == "dhcp" ]; then
+        IP=""
+        MASC=""
+        PE=""
+        S_DNS=""
+        shift 2
+    else
+        echo "Modo no válido. Usa 'dhcp' o 'manual'"
+        exit 1
+    fi
+
+    # --- PROCESAR SSID Y PASSWORD SI ES WIFI ---
+    SSID=""
+    PASSWORD=""
+
+    if $es_wifi; then
+        total_args=$#
+        if [ $total_args -ge 2 ]; then
+            eval PASSWORD=\${$total_args}
+            for (( i=1; i<total_args; i++ )); do
+                eval part=\${$i}
+                SSID+="$part "
+            done
+            SSID=$(echo "$SSID" | sed 's/ *$//')  # quitar espacio final
+        fi
+    fi
+
+    # --- GUARDAR CONFIGURACIÓN ---
+    {
+        echo "MODO=$MODO"
+        echo "IFWAN=$IFWAN"
+        echo "IP=$IP"
+        echo "MASC=$MASC"
+        echo "PE=$PE"
+        echo "S_DNS=$S_DNS"
+        if [ -n "$SSID" ]; then
+            echo "SSID=\"$SSID\""
+            echo "PASSWORD=\"$PASSWORD\""
+        fi
+    } > $fichero
 
     echo "Configuración guardada correctamente"
-
 }
 
 function estado(){

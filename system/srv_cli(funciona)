@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#trap "rm -f /tmp/f; echo 'Tuberia eliminada'" EXIT
+
+#mkfifo /tmp/f
+#cat /tmp/f | /usr/local/JSBach/system/scr_cli 2>&1 | nc -lk 127.0.0.1 1234 > /tmp/f
+
+
+trap "rm -f /tmp/f; echo 'Tuberia eliminada'" EXIT
+
+while true; do
+  mkfifo /tmp/f
+  cat /tmp/f | /usr/local/JSBach/system/scr_cli 2>&1 | nc -l -p 1234 -q 1 > /tmp/f
+  rm -f /tmp/f
+done
