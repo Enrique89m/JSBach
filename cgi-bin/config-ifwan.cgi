@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /usr/local/JSBach/conf/variables.conf
+
 echo "Content-type: text/html"
 echo ""
 
@@ -135,7 +137,7 @@ cat <<EOM
     function toggleWifi() {
   const actionField = document.getElementById('actionField');
   if (actionField) actionField.value = "scan";
-  document.getElementById('configForm').action = "/cgi-bin/config-ifwan.cgi"; // 👈 vuelve a esta misma página
+  document.getElementById('configForm').action = "/$DIR_CGI/config-ifwan.cgi"; // 👈 vuelve a esta misma página
   document.getElementById('configForm').submit();
 }
 
@@ -186,7 +188,7 @@ cat <<EOM
 <body onload="toggleFields()">
   <h1>Configuración WAN</h1>
 
-  <form action="/cgi-bin/guardar-ifwan.cgi" method="get" id="configForm">
+  <form action="/$DIR_CGI/guardar-ifwan.cgi" method="get" id="configForm">
     <input type="hidden" name="ACTION" id="actionField" value="">
   <label>
     <input type="radio" name="MODO" value="dhcp" id="modo_dhcp" $checked_dhcp onclick="toggleFields()"> DHCP

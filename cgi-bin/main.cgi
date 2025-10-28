@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /usr/local/JSBach/conf/variables.conf
+
 /bin/cat << EOM
 
 <html>

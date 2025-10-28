@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /usr/local/JSBach/conf/variables.conf
+
 # Cabecera HTTP obligatoria
 echo "Content-type: text/html"
 echo ""
@@ -15,8 +17,6 @@ echo ""
 <body>
 EOM
 
-
-
 modo=$(echo "$QUERY_STRING" | sed -n 's/.*MODO=\([^&]*\).*/\1/p')
 ifwan=$(echo "$QUERY_STRING" | sed -n 's/.*IFWAN=\([^&]*\).*/\1/p')
 ip=$(echo "$QUERY_STRING" | sed -n 's/.*IP=\([^&]*\).*/\1/p')
@@ -28,7 +28,7 @@ password=$(echo "$QUERY_STRING" | sed -n 's/.*PASSWORD=\([^&]*\).*/\1/p')
 
 
 # --- Ruta absoluta de tu script ---
-SCRIPT_PATH="/usr/local/JSBach/scripts/client_srv_cli"
+SCRIPT_PATH="$DIR/$NOMBRE_EQUIPO/$DIR_SCRIPTS/client_srv_cli"
 
 # Si es wifi y hay SSID, añadimos SSID y PASSWORD
 if [ -n "$ssid" ]; then
@@ -76,7 +76,7 @@ fi
 
 cat <<EOM
   <hr>
-  <a href="/cgi-bin/config-ifwan.cgi">Volver a configuración</a>
+  <a href="/$DIR_CGI/config-ifwan.cgi">Volver a configuración</a>
 </body>
 </html>
 EOM

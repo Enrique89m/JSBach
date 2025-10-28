@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /usr/local/JSBach/conf/variables.txt
+source /usr/local/JSBach/conf/variables.conf
 
 echo "Content-Type:text/html;charset=utf-8"
 /bin/cat << EOM
@@ -41,12 +41,12 @@ echo "<h1 align="center">Menu de administración del Router "$HOSTNAME" con "$PR
 
 <script>
 function wan(){
-window.top.frames['menu'].location.href='/cgi-bin/menu-ifwan.cgi';
-window.top.frames['body'].location.href='/cgi-bin/ifwan.cgi?command=estado&';
+window.top.frames['menu'].location.href='/$DIR_CGI/menu-ifwan.cgi';
+window.top.frames['body'].location.href='/$DIR_CGI/ifwan.cgi?command=estado&';
 }
 function enrutar(){
-window.top.frames['menu'].location.href='/cgi-bin/menu-enrutar.cgi';
-window.top.frames['body'].location.href='/cgi-bin/enrutar.cgi?command=estado&';
+window.top.frames['menu'].location.href='/$DIR_CGI/menu-enrutar.cgi';
+window.top.frames['body'].location.href='/$DIR_CGI/enrutar.cgi?command=estado&';
 }
 </script>
 

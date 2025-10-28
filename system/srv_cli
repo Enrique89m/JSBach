@@ -1,6 +1,8 @@
 #!/bin/bash
+
+source /usr/local/JSBach/conf/variables.conf
  
  trap "rm -f /tmp/f; echo 'Tuberia eliminada.'" EXIT
- 
- mkfifo /tmp/f 
- cat /tmp/f | nc -lk 127.0.0.1 1234  | /usr/local/JSBach/system/scr_cli 2>&1 > /tmp/f
+
+ mkfifo /tmp/f
+ cat /tmp/f | nc -lk 127.0.0.1 1234  | $DIR/$NOMBRE_EQUIPO/$DIR_SYSTEM/scr_cli 2>&1 > /tmp/f

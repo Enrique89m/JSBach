@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# Cabecera HTTP obligatoria
+source /usr/local/JSBach/conf/variables.conf
+
 echo "Content-type: text/html"
 echo ""
 
-# Bloque HTML con EOF
+
 /bin/cat <<EOM
 <!DOCTYPE html>
 <html>
@@ -16,7 +17,7 @@ echo ""
   <h1>IFWAN Estado</h1>
 EOM
 
-echo "$(/usr/local/JSBach/scripts/client_srv_cli ifwan estado) <br>"
+echo "$($DIR/$NOMBRE_EQUIPO/$DIR_SCRIPTS/client_srv_cli ifwan estado) <br>"
 
 /bin/cat <<EOM
 </body>

@@ -1,5 +1,5 @@
 #!/bin/bash
-source /usr/local/JSBach/conf/ifwan.conf
+source "$DIR/$NOMBRE_EQUIPO/$DIR_CONFIG/$CONFIG_IFWAN"
 
 ###################
 #### FUNCIONES ####

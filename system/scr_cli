@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /usr/local/JSBach/conf/variables.conf
+
 while read orden
 do
     if [[ -n $orden ]] then
@@ -9,10 +11,10 @@ do
 
         case "$Comando" in
             "enrutar")
-                /usr/local/JSBach/scripts/enrutar $Argumentos
+                $DIR/$NOMBRE_EQUIPO/$DIR_SCRIPTS/enrutar $Argumentos
                 ;;
             "ifwan")
-                /usr/local/JSBach/scripts/ifwan $Argumentos
+                $DIR/$NOMBRE_EQUIPO/$DIR_SCRIPTS/ifwan $Argumentos
                 ;;
             *)
                 echo "CLI Error en el argumento"

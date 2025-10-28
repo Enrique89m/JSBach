@@ -1,4 +1,5 @@
 #!/bin/bash
+source /usr/local/JSBach/conf/variables.conf
 source /usr/local/JSBach/conf/ifwan.conf
 
 ###################
@@ -106,7 +107,7 @@ function parar() {
 
 
 function configurar() {
-    fichero="/usr/local/JSBach/conf/ifwan.conf"
+    fichero="$DIR/$NOMBRE_EQUIPO/$DIR_CONFIG/$CONFIG_IFWAN"
 
     MODO=$1
     IFWAN=$2

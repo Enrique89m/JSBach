@@ -1,4 +1,7 @@
 #!/bin/bash
+
+source /usr/local/JSBach/conf/variables.conf
+
 echo "Content-type: text/html; charset=utf-8"
 echo ""
 
@@ -15,7 +18,7 @@ command=$(echo "$QUERY_STRING" | sed -n 's/^.*command=\([^&]*\).*$/\1/p')
 
 echo "Configuració WAN <br>"
 
-echo "$(/usr/local/JSBach/scripts/client_srv_cli ifwan $command) <br>"
+echo "$($DIR/$NOMBRE_EQUIPO/$DIR_SCRIPTS/client_srv_cli ifwan $command) <br>"
 
 
 /bin/cat << EOM
